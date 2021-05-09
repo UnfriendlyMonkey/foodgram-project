@@ -9,6 +9,9 @@ class Tag(models.Model):
 	name = models.CharField(max_length=125)
 	slug = models.SlugField(unique=True)
 
+	def __str__(self):
+		return self.name
+
 
 class Ingredient(models.Model):
 	name = models.CharField(max_length=250)
@@ -36,3 +39,24 @@ class RecipeIngredient(models.Model):
 	recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
 	ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE)
 	quantity = models.PositiveIntegerField()
+
+
+class Follow(models.Model):
+	follower = models.ForeignKey(
+		User,
+		on_delete=models.CASCADE,
+		related_name='follower'
+	)
+	following = models.ForeignKey(
+		User,
+		on_delete=models.CASCADE,
+		related_name='following'
+	)
+
+	class Meta:
+		constraints = [
+			models.UniqueConstraint(
+				fields=('follower', 'following'),
+				name='unique_follow'
+			),
+		]
