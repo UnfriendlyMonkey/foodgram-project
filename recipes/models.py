@@ -60,3 +60,6 @@ class Follow(models.Model):
 				name='unique_follow'
 			),
 		]
+
+	def __str__(self):
+		return f"{self.follower} following {self.following}"
