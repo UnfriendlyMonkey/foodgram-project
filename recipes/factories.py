@@ -5,17 +5,19 @@ from factory import fuzzy
 
 from users.factories import UserFactory
 
-from . import models
+from recipes import models
 
 
 class BaseRecipeFactory(factory.django.DjangoModelFactory):
     """Factory that generates Recipes without Ingredients."""
-    author = factory.SubFactory(UserFactory)
-    name = factory.Faker('word')
+    user = factory.SubFactory(UserFactory)
+    title = factory.Faker('word')
+    slug = title
     image = factory.django.ImageField(width=1000)
-    text = factory.Faker('text')
+    description = factory.Faker('text')
     # no ingredients
     cooking_time = fuzzy.FuzzyInteger(10, 120)
+    tag = factory.Iterator(models.Tag.objects.all())
 
     class Meta:
         model = models.Recipe
@@ -24,7 +26,7 @@ class BaseRecipeFactory(factory.django.DjangoModelFactory):
 class RecipeIngredientFactory(factory.django.DjangoModelFactory):
     """Factory that generates Recipes with Ingredients."""
     recipe = factory.SubFactory(BaseRecipeFactory)
-    amount = fuzzy.FuzzyInteger(50, 500)
+    quantity = fuzzy.FuzzyInteger(50, 500)
 
     class Meta:
         model = models.RecipeIngredient
