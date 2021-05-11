@@ -28,7 +28,6 @@ class Ingredient(models.Model):
 
 class Recipe(models.Model):
 	title = models.CharField(max_length=250, verbose_name='Название')
-	slug = models.SlugField(unique=True)
 	user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Автор')
 	description = models.TextField(verbose_name='Описание')
 	cooking_time = models.PositiveIntegerField(verbose_name='Время приготовления')
