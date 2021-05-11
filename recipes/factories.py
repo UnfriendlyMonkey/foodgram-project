@@ -1,4 +1,4 @@
-from random import choice
+from random import choice, randint
 
 import factory
 from factory import fuzzy
@@ -37,25 +37,33 @@ class RecipeIngredientFactory(factory.django.DjangoModelFactory):
 
 
 class RecipeFactory(BaseRecipeFactory):
-    """Factory that generates Recipes with 5 Ingredients."""
+    """Factory that generates Recipes with random amount of Ingredients."""
 
-    ingredient_1 = factory.RelatedFactory(
-        RecipeIngredientFactory,
-        factory_related_name='recipe',
-    )
-    ingredient_2 = factory.RelatedFactory(
-        RecipeIngredientFactory,
-        factory_related_name='recipe',
-    )
-    ingredient_3 = factory.RelatedFactory(
-        RecipeIngredientFactory,
-        factory_related_name='recipe',
-    )
-    ingredient_4 = factory.RelatedFactory(
-        RecipeIngredientFactory,
-        factory_related_name='recipe',
-    )
-    ingredient_5 = factory.RelatedFactory(
-        RecipeIngredientFactory,
-        factory_related_name='recipe',
-    )
+    ingredients_amount = randint(1, 7)
+
+    for _ in ingredients_amount:
+        ingredient = factory.RelatedFactory(
+            RecipeIngredientFactory,
+            factory_related_name='recipe',
+        )
+
+    # ingredient_1 = factory.RelatedFactory(
+    #     RecipeIngredientFactory,
+    #     factory_related_name='recipe',
+    # )
+    # ingredient_2 = factory.RelatedFactory(
+    #     RecipeIngredientFactory,
+    #     factory_related_name='recipe',
+    # )
+    # ingredient_3 = factory.RelatedFactory(
+    #     RecipeIngredientFactory,
+    #     factory_related_name='recipe',
+    # )
+    # ingredient_4 = factory.RelatedFactory(
+    #     RecipeIngredientFactory,
+    #     factory_related_name='recipe',
+    # )
+    # ingredient_5 = factory.RelatedFactory(
+    #     RecipeIngredientFactory,
+    #     factory_related_name='recipe',
+    # )
