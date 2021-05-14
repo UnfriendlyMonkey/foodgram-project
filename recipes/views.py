@@ -44,13 +44,13 @@ class BaseRecipeListView(IsFavoriteMixin, ListView):
 class IndexView(BaseRecipeListView):
     """Main page that displays list of Recipes."""
     page_title = 'Рецепты'
-    template_name = 'recipes/recipe_list.html'
+    template_name = 'recipes/recipes_list.html'
 
 
 class FavoriteView(LoginRequiredMixin, BaseRecipeListView):
     """List of current user's favorite Recipes."""
     page_title = 'Избранное'
-    template_name = 'recipes/recipe_list.html'
+    template_name = 'recipes/recipes_list.html'
 
     def get_queryset(self):
         """Display favorite recipes only."""
@@ -62,7 +62,7 @@ class FavoriteView(LoginRequiredMixin, BaseRecipeListView):
 
 class ProfileView(BaseRecipeListView):
     """User's page with its name and list of authored Recipes."""
-    template_name = 'recipes/profile_recipe_list.html'
+    template_name = 'recipes/author_recipes_list.html'
 
     def get(self, request, *args, **kwargs):
         """Store `user` parameter for data filtration purposes."""

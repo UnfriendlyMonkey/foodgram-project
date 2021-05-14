@@ -15,6 +15,7 @@
 {% block content %}
     <div class="main__header">
         <h1 class="main__title">{{ page_title }}</h1>
+        {% include 'recipes/includes/tags.html' %}
     </div>
 
     <div class="card-list">
@@ -33,12 +34,25 @@
     <script src="{% static 'js/components/MainCards.js' %}"></script>
 
     <script src="{% static 'js/components/Purchases.js' %}"></script>
-    <script src="{% static 'js/components/Favorites.js' %}"></script>
+    {% if user.is_authenticated %}
+        <script src="{% static 'js/components/Favorites.js' %}"></script>
+    {% endif %}
 
     <script src="{% static 'js/config/config.js' %}"></script>
     <script src="{% static 'js/components/CardList.js' %}"></script>
     <script src="{% static 'js/components/Header.js' %}"></script>
 
     <script src="{% static 'js/api/Api.js' %}"></script>
-    <script src="{% static 'js/templates/foodgram/indexAuth.js' %}"></script>
+
+    {% if page_title = 'Рецепты' && user.is_authenticated %}
+        <script src="{% static 'js/templates/indexAuth.js' %}"></script>
+
+    {% elif page_title = 'Рецепты' %}
+        <script src="{% static 'js/templates/indexNotAuth.js' %}"></script>
+
+    {% elif page_title = 'Избранное' %}
+        <script src="{% static 'js/templates/favorite.js' %}"></script>
+    {% endif %}
+
+
 {% endblock %}
