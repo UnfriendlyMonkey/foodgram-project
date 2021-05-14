@@ -1,5 +1,7 @@
 from django.db import models
 from django.contrib.auth import get_user_model
+from django.db.models import Exists, OuterRef
+from typing import Optional
 
 
 User = get_user_model()
@@ -8,6 +10,7 @@ User = get_user_model()
 class Tag(models.Model):
 	name = models.CharField(max_length=125)
 	slug = models.SlugField(unique=True)
+	color = models.CharField(max_length=50)
 
 	def __str__(self):
 		return self.name
@@ -26,6 +29,17 @@ class Ingredient(models.Model):
 		return f"{self.name}, {self.unit}"
 
 
+class RecipeQuerySet(models.QuerySet):
+	def with_is_favorite(self, user_id: Optional[int]):
+		"""Annotate with favorite flag."""
+		return self.annotate(is_favorite=Exists(
+			Favorite.objects.filter(
+				user_id=user_id,
+				recipe_id=OuterRef('pk'),
+			),
+		))
+
+
 class Recipe(models.Model):
 	title = models.CharField(max_length=250, verbose_name='Название')
 	user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Автор')
@@ -35,6 +49,8 @@ class Recipe(models.Model):
 	image = models.ImageField(upload_to='recipes/images/', null=True, blank=True, verbose_name='Изображение')
 	tag = models.ManyToManyField(Tag, related_name='recipes', db_constraint=True, verbose_name='Тэги')
 	pub_date = models.DateTimeField(auto_now_add=True, db_index=True, verbose_name='Дата публикации')
+
+	objects = RecipeQuerySet.as_manager()
 
 	class Meta:
 		verbose_name = 'Рецепт'

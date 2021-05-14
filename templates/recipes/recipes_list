@@ -18,6 +18,9 @@
         {% include 'recipes/includes/tags.html' %}
     </div>
 
+    {% block subscribe %}
+    {% endblock %}
+
     <div class="card-list">
         {% for recipe in page_obj %}
             {% include 'recipes/includes/recipe_card.html' with recipe=recipe %}
@@ -44,13 +47,13 @@
 
     <script src="{% static 'js/api/Api.js' %}"></script>
 
-    {% if page_title = 'Рецепты' && user.is_authenticated %}
+    {% if page_title == 'Рецепты' and user.is_authenticated %}
         <script src="{% static 'js/templates/indexAuth.js' %}"></script>
 
-    {% elif page_title = 'Рецепты' %}
+    {% elif page_title == 'Рецепты' %}
         <script src="{% static 'js/templates/indexNotAuth.js' %}"></script>
 
-    {% elif page_title = 'Избранное' %}
+    {% elif page_title == 'Избранное' %}
         <script src="{% static 'js/templates/favorite.js' %}"></script>
     {% endif %}
 

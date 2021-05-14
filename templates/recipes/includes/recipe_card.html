@@ -7,8 +7,8 @@
             {{ recipe.title }}
         </a>
         <ul class="card__items">
-            {% for tag_name in recipe.tag.all() %}
-                {% include 'recipes/includes/tag_badges.html' with tag_name=tag_name %}
+            {% for tag in recipe.tag.all() %}
+                <li class="card__item"><span class="badge badge_style_{{ tag.color }}">{{ tag.name }}</span></li>
             {% endfor %}
         </ul>
         <div class="card__items card__items_column">
