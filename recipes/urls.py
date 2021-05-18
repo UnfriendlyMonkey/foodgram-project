@@ -17,7 +17,7 @@ recipes_patterns = [
     path('new/', views.new_recipe, name='new_recipe'),
 ]
 
-cart_patterns = [
+purchases_patterns = [
     # path('', views.CartListView.as_view(), name='cart_view'),
     path('download/', views.shopping_cart_download, name='download')
 ]
@@ -34,5 +34,6 @@ api_patterns = [
 urlpatterns = [
     path('', include(views_patterns)),
     path('api/', include(format_suffix_patterns(api_patterns))),
-    path('recipes/', include(recipes_patterns, namespace='recipes'))
+    path('recipes/', include(recipes_patterns, namespace='recipes')),
+    path('purchases/', include(purchases_patterns, namespace='purchases')),
 ]

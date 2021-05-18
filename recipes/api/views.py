@@ -1,8 +1,9 @@
-from rest_framework import status
+from rest_framework import status, mixins, viewsets, filters
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from recipes.models import Favorite, Follow
+from recipes.api.serializers import IngredientSerializer
+from recipes.models import Favorite, Follow, Ingredient
 
 
 class AddToFavorites(APIView):
@@ -47,19 +48,8 @@ class RemoveSubscription(APIView):
         return Response({'success': True}, status=status.HTTP_200_OK)
 
 
-# аналогичные функции из старого проекта yatube
-# @login_required
-# def profile_follow(request, username):
-#     author = get_object_or_404(User, username=username)
-#     if author != request.user:
-#         follow_link = Follow.objects.get_or_create(user=request.user, author=author)
-#     return redirect('profile', username)
-#
-#
-# @login_required
-# def profile_unfollow(request, username):
-#     author = get_object_or_404(User, username=username)
-#     follow_link = Follow.objects.get(user=request.user, author=author)
-#     if follow_link:
-#         follow_link.delete()
-#     return redirect('profile', username)
+class IngredientsViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+    queryset = Ingredient.objects.all()
+    serializer_class = IngredientSerializer
+    filter_backends = (filters.SearchFilter, )
+    search_fields = ('^name', )
