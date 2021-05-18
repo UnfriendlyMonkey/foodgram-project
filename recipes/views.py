@@ -1,10 +1,16 @@
+import io
+
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db import transaction
+from django.http import FileResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.template.loader import render_to_string
 from django.views.generic import DetailView, ListView
+import pdfkit
 
 from recipes.forms import RecipeForm
-from recipes.models import Recipe, User, Follow
+from recipes.models import Recipe, User, Follow, Ingredient
 
 
 class IsFavoriteMixin:
@@ -140,10 +146,11 @@ def new_recipe(request):
         return render(request, 'new_recipe.html', {'form': form})
     form = RecipeForm(request.POST or None, files=request.FILES or None)
     if form.is_valid():
-        recipe = form.save(commit=False)
-        recipe.user = request.user
-        recipe.save()
-        return redirect('index')
+        with transaction.atomic():
+            recipe = form.save(commit=False)
+            recipe.user = request.user
+            recipe.save()
+        return redirect('recipes:details', pk=recipe.id)
     return render(
         request,
         'new_recipe.html',
@@ -151,18 +158,14 @@ def new_recipe(request):
     )
 
 
-# @login_required
-# def follow_index(request):
-#     post_list = Post.objects.filter(author__following__user=request.user)
-#     paginator = Paginator(post_list, 10)
-#     page_number = request.GET.get('page')
-#     page = paginator.get_page(page_number)
-#
-#     return render(
-#         request,
-#         "follow.html",
-#         {"page": page, "paginator": paginator}
-#     )
+def shopping_cart_download(request):
+    ingredients = Ingredient.objects.all()[:15]
+    to_string = render_to_string(
+        'cart_to_load.html', {'ingredients': ingredients}
+    )
+    to_pdf = pdfkit.from_string(to_string, False)
+    buffer = io.BytesIO(to_pdf)
+    return FileResponse(buffer, as_attachment=True, filename='shopping_cart.pdf')
 
 
 def page_not_found(request, exception):

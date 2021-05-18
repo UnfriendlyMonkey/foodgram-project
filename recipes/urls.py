@@ -9,8 +9,17 @@ views_patterns = [
     path('', views.IndexView.as_view(), name='index'),
     path('favorites/', views.FavoriteView.as_view(), name='favorites'),
     path('profiles/<str:username>/', views.ProfileView.as_view(), name='profile'),  # noqa
-    path('recipes/<int:pk>/', views.RecipeDetailView.as_view(), name='recipe'),
     path('subscriptions/', views.SubscriptionsView.as_view(), name='subscriptions')
+]
+
+recipes_patterns = [
+    path('<int:pk>/', views.RecipeDetailView.as_view(), name='detail'),
+    path('new/', views.new_recipe, name='new_recipe'),
+]
+
+cart_patterns = [
+    # path('', views.CartListView.as_view(), name='cart_view'),
+    path('download/', views.shopping_cart_download, name='download')
 ]
 
 api_patterns = [
@@ -25,4 +34,5 @@ api_patterns = [
 urlpatterns = [
     path('', include(views_patterns)),
     path('api/', include(format_suffix_patterns(api_patterns))),
+    path('recipes/', include(recipes_patterns, namespace='recipes'))
 ]
