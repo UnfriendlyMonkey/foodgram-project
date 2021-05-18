@@ -42,7 +42,7 @@ class RecipeQuerySet(models.QuerySet):
 
 class Recipe(models.Model):
 	title = models.CharField(max_length=250, verbose_name='Название')
-	user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Автор')
+	user = models.ForeignKey(User, related_name='recipes', on_delete=models.CASCADE, verbose_name='Автор')
 	description = models.TextField(verbose_name='Описание')
 	cooking_time = models.PositiveIntegerField(verbose_name='Время приготовления')
 	ingredient = models.ManyToManyField(Ingredient, through='RecipeIngredient', verbose_name='Ингредиенты')

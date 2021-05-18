@@ -8,7 +8,7 @@
                 </li>
                 {% if user.is_authenticated %}
                     <li class="nav__item">
-                        <a href="#" class="nav__link link">Мои подписки</a>
+                        <a href="{% url 'subscriptions' %}" class="nav__link link">Мои подписки</a>
                     </li>
 
                     <li class="nav__item {% if request.resolver_match.url_name  == 'create' %}nav__item_active{% endif %}">

@@ -33,12 +33,6 @@ class RecipeIngredientInline(admin.TabularInline):
 	model = RecipeIngredient
 	extra = 1
 
-# shows Error:
-# <class 'recipes.admin.RecipeTagInline'>: (admin.E202) 'recipes.Tag' has no ForeignKey to 'recipes.Recipe'.
-# class RecipeTagInline(admin.TabularInline):
-# 	model = Tag
-# 	extra = 1
-
 
 @admin.register(Recipe)
 class RecipeAdmin(admin.ModelAdmin):
@@ -63,11 +57,11 @@ class RecipeAdmin(admin.ModelAdmin):
 
 @admin.register(Favorite)
 class FavoriteAdmin(admin.ModelAdmin):
-    fields = (
+	fields = (
         'user',
         'recipe',
     )
-    search_fields = (
+	search_fields = (
         'user',
         'recipe',
     )

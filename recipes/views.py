@@ -1,8 +1,10 @@
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect, render
 from django.views.generic import DetailView, ListView
 
-from recipes.models import Recipe, User
+from recipes.forms import RecipeForm
+from recipes.models import Recipe, User, Follow
 
 
 class IsFavoriteMixin:
@@ -13,7 +15,7 @@ class IsFavoriteMixin:
         qs = super().get_queryset()
         qs = (
             qs
-            .select_related('author')
+            .select_related('user')
             .with_is_favorite(user_id=self.request.user.id)
         )
 
@@ -55,6 +57,7 @@ class FavoriteView(LoginRequiredMixin, BaseRecipeListView):
     def get_queryset(self):
         """Display favorite recipes only."""
         qs = super().get_queryset()
+        # TO DO - уточнить название фильтра
         qs = qs.filter(favorites__user=self.request.user)
 
         return qs
@@ -70,10 +73,16 @@ class ProfileView(BaseRecipeListView):
 
         return super().get(request, *args, **kwargs)
 
+    def get_context_data(self, **kwargs):
+        kwargs.update({'author': self.user})
+
+        context = super().get_context_data(**kwargs)
+        return context
+
     def get_queryset(self):
         """Display favorite recipes only."""
         qs = super().get_queryset()
-        qs = qs.filter(author=self.user)
+        qs = qs.filter(user=self.user)
 
         return qs
 
@@ -85,7 +94,7 @@ class ProfileView(BaseRecipeListView):
 class RecipeDetailView(IsFavoriteMixin, DetailView):
     """Page with Recipe details."""
     queryset = Recipe.objects.all()
-    template_name = 'recipes/recipe_detail.html'
+    template_name = 'recipes/single_page.html'
 
     def get_queryset(self):
         """Annotate with favorite mark."""
@@ -97,3 +106,77 @@ class RecipeDetailView(IsFavoriteMixin, DetailView):
         )
 
         return qs
+
+
+class SubscriptionsView(LoginRequiredMixin, ListView):
+    """List of current user's subscriptions."""
+    page_title = 'Мои подписки'
+    context_object_name = 'subscriptions_list'
+    paginate_by = 6
+    template_name = 'recipes/subscriptions.html'
+    queryset = User.objects.all()
+
+    def get_queryset(self):
+        """Display subscriptions with their recipes."""
+        qs = super().get_queryset()
+
+        qs = User.objects.filter(following__follower=self.request.user).order_by('username').prefetch_related('recipes')
+
+        print(qs)
+
+        return qs
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['page_title'] = 'Мои подписки'
+
+        return context
+
+
+@login_required
+def new_recipe(request):
+    if request.method != 'POST':
+        form = RecipeForm()
+        return render(request, 'new_recipe.html', {'form': form})
+    form = RecipeForm(request.POST or None, files=request.FILES or None)
+    if form.is_valid():
+        recipe = form.save(commit=False)
+        recipe.user = request.user
+        recipe.save()
+        return redirect('index')
+    return render(
+        request,
+        'new_recipe.html',
+        {'form': form}
+    )
+
+
+# @login_required
+# def follow_index(request):
+#     post_list = Post.objects.filter(author__following__user=request.user)
+#     paginator = Paginator(post_list, 10)
+#     page_number = request.GET.get('page')
+#     page = paginator.get_page(page_number)
+#
+#     return render(
+#         request,
+#         "follow.html",
+#         {"page": page, "paginator": paginator}
+#     )
+
+
+def page_not_found(request, exception):
+    return render(
+        request,
+        "misc/404.html",
+        {"path": request.path},
+        status=404
+    )
+
+
+def server_error(request):
+    return render(
+        request,
+        "misc/500.html",
+        status=500
+    )
