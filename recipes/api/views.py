@@ -1,4 +1,4 @@
-from rest_framework import status, mixins, viewsets, filters
+from rest_framework import status, mixins, viewsets, filters, generics
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -48,8 +48,37 @@ class RemoveSubscription(APIView):
         return Response({'success': True}, status=status.HTTP_200_OK)
 
 
-class IngredientsViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+# class IngredientsViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+#     queryset = Ingredient.objects.all()
+#     serializer_class = IngredientSerializer
+#     filter_backends = (filters.SearchFilter, )
+#     search_fields = ('^name', )
+
+class IngredientsViewSet(generics.ListAPIView):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
-    filter_backends = (filters.SearchFilter, )
-    search_fields = ('^name', )
+    # filter_backends = (filters.SearchFilter, )
+    # search_fields = ('^name', )
+
+    def get_queryset(self):
+        """
+        Returns queryset filtered by first letters of query.
+        """
+        query = self.request.query_params.get('query')
+        print(query)
+        if query:
+            ingredients = Ingredient.objects.filter(name__startswith=query)[:25]
+            print(ingredients)
+            return ingredients
+        return Ingredient.objects.all()
+
+
+# class IngredientList(generics.ListAPIView):
+#     serializer_class = IngredientSerializer
+#
+#     def get(self, request, *args, **kwargs):
+#         query = request.query_params.get('query')
+#         if not query or len(query) >= 3:
+#             return super().get(request, *args, **kwargs)
+#         return Response([{'warning': 'Enter minimum 3 symbols for a hint'}, ])
+

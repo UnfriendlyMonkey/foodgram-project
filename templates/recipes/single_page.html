@@ -14,7 +14,9 @@
 
 {% block content %}
     <div class="single-card" data-id="{{ recipe.id }}" data-author="{{ recipe.user.id }}">
-        <img src="{{ recipe.image.url }}" alt="{{ recipe.title }}" class="single-card__image">
+        {% if recipe.image %}
+            <img src="{{ recipe.image.url }}" alt="{{ recipe.title }}" class="single-card__image">
+        {% endif %}
 
         <div class="single-card__info">
             <div class="single-card__header-info">

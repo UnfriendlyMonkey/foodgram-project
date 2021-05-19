@@ -1,9 +1,11 @@
 <div class="card" data-id="{{ recipe.id }}">
 
-    <img src="{{ recipe.image.url }}" alt="{{ recipe.title }}" class="card__image">
+    {% if recipe.image %}
+        <img src="{{ recipe.image.url }}" alt="{{ recipe.title }}" class="card__image">
+    {% endif %}
 
     <div class="card__body">
-        <a class="card__title link" href="{% url 'recipe' recipe.id %}">
+        <a class="card__title link" href="{% url 'detail' recipe.id %}">
             {{ recipe.title }}
         </a>
         <ul class="card__items">

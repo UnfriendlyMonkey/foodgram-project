@@ -10,7 +10,7 @@ from django.views.generic import DetailView, ListView
 import pdfkit
 
 from recipes.forms import RecipeForm
-from recipes.models import Recipe, User, Follow, Ingredient
+from recipes.models import Recipe, User, Follow, Ingredient, Tag, RecipeIngredient
 
 
 class IsFavoriteMixin:
@@ -139,21 +139,54 @@ class SubscriptionsView(LoginRequiredMixin, ListView):
         return context
 
 
+def parse_recipe(data):
+    tags = []
+    ingredients = {}
+    for key, value in data.items():
+        print(key, value)
+        if value.startswith('on'):
+            tags.append(key)
+        if key.startswith('nameIngredient'):
+            index = key.split('_')[1]
+            ingredients[value] = data.get(f'valueIngredient_{index}')
+    return tags, ingredients
+
+
 @login_required
 def new_recipe(request):
     if request.method != 'POST':
         form = RecipeForm()
-        return render(request, 'new_recipe.html', {'form': form})
+        tags = Tag.objects.all()
+        return render(request, 'recipes/new_recipe.html', {'form': form, 'tags': tags})
     form = RecipeForm(request.POST or None, files=request.FILES or None)
+    print(form.data)
+    print(form.is_valid())
+    print(form.errors)
+    tags, ingredients = parse_recipe(request.POST)
+
     if form.is_valid():
         with transaction.atomic():
             recipe = form.save(commit=False)
             recipe.user = request.user
             recipe.save()
-        return redirect('recipes:details', pk=recipe.id)
+
+            for slug in tags:
+                tag = get_object_or_404(Tag, slug=slug)
+                print(tag)
+                recipe.tag.add(tag)
+            recipe.save()
+
+            ingreds = []
+            for name, value in ingredients.items():
+                ingredient = get_object_or_404(Ingredient, name=name)
+                combination = RecipeIngredient(ingredient=ingredient, recipe=recipe, quantity=value)
+                ingreds.append(combination)
+            RecipeIngredient.objects.bulk_create(ingreds)
+            form.save_m2m()  # TODO - check if it's necessary here
+        return redirect('detail', pk=recipe.id)
     return render(
         request,
-        'new_recipe.html',
+        'recipes/new_recipe.html',
         {'form': form}
     )
 
