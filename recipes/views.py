@@ -20,13 +20,12 @@ class IsFavoriteMixin:
     def get_queryset(self):
         """Annotate with favorite mark."""
         qs = super().get_queryset()
-        qs = (
-            qs
-            .select_related('user')
-            .with_favorite_and_cart(user_id=self.request.user.id)
-        )
+        if 'cart' not in self.request.session.keys():
+            self.request.session['cart'] = []
+        if self.request.user.is_authenticated:
+            return qs.select_related('user').with_favorite_and_cart(user_id=self.request.user.id)
 
-        return qs
+        return qs.select_related('user').with_session_data(self.request.session['cart'])
 
 
 class BaseRecipeListView(IsFavoriteMixin, ListView):
@@ -167,7 +166,10 @@ class CartListView(ListView):
     context_object_name = 'shopping_list'
 
     def get_queryset(self):
-        queryset = Recipe.objects.filter(in_cart__user=self.request.user)
+        if self.request.user.is_authenticated:
+            queryset = Recipe.objects.filter(in_cart__user=self.request.user)
+        else:
+            queryset = self.request.session['cart']
 
         return queryset
 

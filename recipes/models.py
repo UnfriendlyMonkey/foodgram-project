@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth import get_user_model
-from django.db.models import Exists, OuterRef
+from django.db.models import Exists, OuterRef, Case, When
 from typing import Optional
 
 
@@ -43,6 +43,9 @@ class RecipeQuerySet(models.QuerySet):
 				recipe_id=OuterRef('pk')
 			),
 		))
+
+	def with_session_data(self, in_cart):
+		return self.annotate(is_in_cart=Case(When(id__in=in_cart, then=True)))
 
 
 class Recipe(models.Model):
