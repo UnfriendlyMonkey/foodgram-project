@@ -114,6 +114,15 @@ class RecipeDetailView(IsFavoriteMixin, DetailView):
 
         return qs
 
+    def get_context_data(self, **kwargs):
+        if self.request.user.is_authenticated:
+            followed_by = Follow.objects.filter(
+                following=self.object.user,
+                follower=self.request.user
+            ).exists()
+            kwargs.update({'followed_by': followed_by})
+        return super().get_context_data(**kwargs)
+
 
 class SubscriptionsView(LoginRequiredMixin, ListView):
     """List of current user's subscriptions."""
@@ -135,6 +144,7 @@ class SubscriptionsView(LoginRequiredMixin, ListView):
         prefetch = Prefetch('recipes',
                             queryset=Recipe.objects
                             .filter(id__in=subscriptions_recipes_view))
+        # TODO: как ограничить поля только нужными? values() не работает с Prefetch
         qs = (users
               .prefetch_related(prefetch)
               .annotate(count=Count('recipes'))
@@ -146,7 +156,6 @@ class SubscriptionsView(LoginRequiredMixin, ListView):
 
     def get_context_data(self, *, object_list=None, **kwargs):
         kwargs.update({'page_title': "Мои подписки"})
-
         context = super().get_context_data(**kwargs)
 
         return context
