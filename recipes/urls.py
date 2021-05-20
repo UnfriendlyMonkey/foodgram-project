@@ -8,7 +8,7 @@ from .api.views import AddToFavorites, RemoveFromFavorites, AddSubscription, Rem
 views_patterns = [
     path('', views.IndexView.as_view(), name='index'),
     path('favorites/', views.FavoriteView.as_view(), name='favorites'),
-    path('profiles/<str:username>/', views.ProfileView.as_view(), name='profile'),  # noqa
+    path('profiles/<str:username>/', views.ProfileView.as_view(), name='profile'),
     path('subscriptions/', views.SubscriptionsView.as_view(), name='subscriptions'),
     path('recipes/<int:pk>/', views.RecipeDetailView.as_view(), name='detail'),
     path('recipes/new/', views.new_recipe, name='new_recipe'),

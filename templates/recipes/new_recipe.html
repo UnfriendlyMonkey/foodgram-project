@@ -93,8 +93,9 @@
             </div>
         </div>
         <div class="form__group">
-            <label for="id_file" class="form__label">Загрузить фото</label>
+            <span class="form__label">Загрузить фото</span>
             <div class="form__field-group">
+                <label for="id_file" class="form__file-button">Выбрать файл</label>
                 <input type="file" name="image" id="id_file">
                 {% if form.image.errors %}
                     {% for error in form.image.errors %}

@@ -144,7 +144,7 @@ def parse_recipe(data):
     ingredients = {}
     for key, value in data.items():
         print(key, value)
-        if value.startswith('on'):
+        if value == 'on':
             tags.append(key)
         if key.startswith('nameIngredient'):
             index = key.split('_')[1]

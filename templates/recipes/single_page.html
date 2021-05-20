@@ -83,9 +83,9 @@
                 <div class="single-card__items single-card__items_column">
 
                     <ul class="card__items">
-                    {% for recipe_ingredient in recipe.recipe_ingredients_set.all %}
+                    {% for item in recipe.recipe_ingredients.all %}
                         <li class=" single-card__section-item">
-                            {{ recipe_ingredients.ingredient.name }} - {{ recipe_ingredients.quantity }} {{ recipe_ingredients.ingredient.unit }}
+                            {{ item.ingredient.name }} - {{ item.quantity }} {{ item.ingredient.unit }}
                         </li>
                     {% endfor %}
                     </ul>
