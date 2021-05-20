@@ -3,7 +3,7 @@ from django.urls import include, path
 from rest_framework.urlpatterns import format_suffix_patterns
 
 from recipes import views
-from .api.views import AddToFavorites, RemoveFromFavorites, AddSubscription, RemoveSubscription, IngredientsViewSet
+from .api.views import AddToFavorites, RemoveFromFavorites, AddSubscription, RemoveSubscription, IngredientsViewSet, ShoppingCart
 
 views_patterns = [
     path('', views.IndexView.as_view(), name='index'),
@@ -13,7 +13,7 @@ views_patterns = [
     path('recipes/<int:pk>/', views.RecipeDetailView.as_view(), name='detail'),
     path('recipes/new/', views.new_recipe, name='new_recipe'),
     path('purchases/download/', views.shopping_cart_download, name='download'),
-    # path('purchases/', views.CartListView.as_view(), name='cart_view')
+    path('purchases/', views.CartListView.as_view(), name='cart_view')
 ]
 
 api_patterns = [
@@ -22,8 +22,8 @@ api_patterns = [
     path('favorites/<int:pk>/', RemoveFromFavorites.as_view()),
     path('subscriptions/', AddSubscription.as_view()),
     path('subscriptions/<int:pk>/', RemoveSubscription.as_view()),
-    # path('purchases/', AddToPurchases.as_view()),
-    # path('purchases/<int:pk>/', RemoveFromPurchases.as_view()),
+    path('purchases/', ShoppingCart.as_view(), name='cart_add'),
+    path('purchases/<int:pk>/', ShoppingCart.as_view(), name='cart_delete'),
 ]
 
 urlpatterns = [

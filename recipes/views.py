@@ -10,7 +10,7 @@ from django.views.generic import DetailView, ListView
 import pdfkit
 
 from recipes.forms import RecipeForm
-from recipes.models import Recipe, User, Follow, Ingredient, Tag, RecipeIngredient
+from recipes.models import Recipe, User, Follow, Ingredient, Tag, RecipeIngredient, ShoppingCart
 
 
 class IsFavoriteMixin:
@@ -22,7 +22,7 @@ class IsFavoriteMixin:
         qs = (
             qs
             .select_related('user')
-            .with_is_favorite(user_id=self.request.user.id)
+            .with_favorite_and_cart(user_id=self.request.user.id)
         )
 
         return qs
@@ -108,7 +108,7 @@ class RecipeDetailView(IsFavoriteMixin, DetailView):
         qs = (
             qs
             .prefetch_related('recipe_ingredients__ingredient')
-            .with_is_favorite(user_id=self.request.user.id)
+            .with_favorite_and_cart(user_id=self.request.user.id)
         )
 
         return qs
@@ -125,10 +125,7 @@ class SubscriptionsView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         """Display subscriptions with their recipes."""
         qs = super().get_queryset()
-
         qs = User.objects.filter(following__follower=self.request.user).order_by('username').prefetch_related('recipes')
-
-        print(qs)
 
         return qs
 
@@ -137,6 +134,17 @@ class SubscriptionsView(LoginRequiredMixin, ListView):
         context['page_title'] = 'Мои подписки'
 
         return context
+
+
+class CartListView(ListView):
+    template_name = 'recipes/shopping_cart.html'
+    queryset = Recipe.objects.all()
+    context_object_name = 'shopping_list'
+
+    def get_queryset(self):
+        queryset = Recipe.objects.filter(in_cart__user=self.request.user)
+
+        return queryset
 
 
 def parse_recipe(data):

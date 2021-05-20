@@ -28,10 +28,16 @@
     </div>
 
     <div class="card__footer">
-        <button class="button button_style_light-blue" name="purchases" data-out>
-            <span class="icon-plus button__icon"></span>
-            Добавить в покупки
-        </button>
+        {% if recipe.is_in_cart %}
+            <button class="button button_style_light-blue" name="purchases">
+                Удалить из покупок
+            </button>
+        {% else %}
+            <button class="button button_style_light-blue" name="purchases" data-out>
+                <span class="icon-plus button__icon"></span>
+                Добавить в покупки
+            </button>
+        {% endif %}
         {% include 'recipes/includes/favorite_button.html' %}
     </div>
 

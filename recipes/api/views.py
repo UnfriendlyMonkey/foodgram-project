@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from recipes.api.serializers import IngredientSerializer
-from recipes.models import Favorite, Follow, Ingredient
+from recipes.models import Favorite, Follow, Ingredient, ShoppingCart as Cart
 
 
 class AddToFavorites(APIView):
@@ -35,7 +35,6 @@ class AddSubscription(APIView):
             follower=request.user,
             following_id=request.data['id'],
         )
-
         return Response({'success': True}, status=status.HTTP_200_OK)
 
 
@@ -48,17 +47,24 @@ class RemoveSubscription(APIView):
         return Response({'success': True}, status=status.HTTP_200_OK)
 
 
-# class IngredientsViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
-#     queryset = Ingredient.objects.all()
-#     serializer_class = IngredientSerializer
-#     filter_backends = (filters.SearchFilter, )
-#     search_fields = ('^name', )
+class ShoppingCart(APIView):
+    """Add recipes to shopping card of authorized User and remove them"""
+
+    def post(self, request):
+        Cart.objects.get_or_create(
+            user=request.user,
+            recipe_id=request.data.get('id'),
+        )
+        return Response({'success': True}, status=status.HTTP_200_OK)
+
+    def delete(self, request, pk):
+        Cart.objects.filter(user=request.user, recipe_id=pk).delete()
+        return Response({'success': True}, status=status.HTTP_200_OK)
+
 
 class IngredientsViewSet(generics.ListAPIView):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
-    # filter_backends = (filters.SearchFilter, )
-    # search_fields = ('^name', )
 
     def get_queryset(self):
         """
@@ -71,14 +77,3 @@ class IngredientsViewSet(generics.ListAPIView):
             print(ingredients)
             return ingredients
         return Ingredient.objects.all()
-
-
-# class IngredientList(generics.ListAPIView):
-#     serializer_class = IngredientSerializer
-#
-#     def get(self, request, *args, **kwargs):
-#         query = request.query_params.get('query')
-#         if not query or len(query) >= 3:
-#             return super().get(request, *args, **kwargs)
-#         return Response([{'warning': 'Enter minimum 3 symbols for a hint'}, ])
-

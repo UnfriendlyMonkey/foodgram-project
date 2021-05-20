@@ -30,12 +30,17 @@ class Ingredient(models.Model):
 
 
 class RecipeQuerySet(models.QuerySet):
-	def with_is_favorite(self, user_id: Optional[int]):
+	def with_favorite_and_cart(self, user_id: Optional[int]):
 		"""Annotate with favorite flag."""
 		return self.annotate(is_favorite=Exists(
 			Favorite.objects.filter(
 				user_id=user_id,
 				recipe_id=OuterRef('pk'),
+			),
+		)).annotate(is_in_cart=Exists(
+			ShoppingCart.objects.filter(
+				user_id=user_id,
+				recipe_id=OuterRef('pk')
 			),
 		))
 
@@ -133,13 +138,13 @@ class ShoppingCart(models.Model):
 	user = models.ForeignKey(
 		User,
 		on_delete=models.CASCADE,
-		related_name='shopping_cart',
+		related_name='purchases',
 		verbose_name='Пользователь'
 	)
 	recipe = models.ForeignKey(
 		Recipe,
 		on_delete=models.CASCADE,
-		related_name='shopping_cart',
+		related_name='in_cart',
 		verbose_name='Рецепт для покупки'
 	)
 

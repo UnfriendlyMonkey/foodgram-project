@@ -20,12 +20,16 @@
                     </li>
                 {% endif %}
 
-                <li class="nav__item">
-                    <a href="#" class="nav__link link">
+                <li class="nav__item {% if request.resolver_match.url_name  == 'cart_view' %}nav__item_active{% endif %}">
+                    <a href="{% url 'cart_view' %}" class="nav__link link">
                         Список покупок
                     </a>
                     <span class="badge badge_style_blue nav__badge" id="counter">
-                        4
+                        {% if user.is_authenticated %}
+                            {{ user.purchases.count }}
+                        {% else %}
+                            0
+                        {% endif %}
                     </span>
                 </li>
             </ul>
