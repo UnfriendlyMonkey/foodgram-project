@@ -3,6 +3,7 @@ import io
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import transaction
+from django.db.models import Subquery, Prefetch, OuterRef, Count
 from django.http import FileResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
@@ -125,13 +126,28 @@ class SubscriptionsView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         """Display subscriptions with their recipes."""
         qs = super().get_queryset()
-        qs = User.objects.filter(following__follower=self.request.user).order_by('username').prefetch_related('recipes')
+        users = User.objects\
+            .filter(following__follower=self.request.user)
+
+        subscriptions_recipes_view = Subquery(Recipe.objects
+                                              .filter(user_id=OuterRef('user_id'))
+                                              .values_list('id', flat=True)[:3])
+        prefetch = Prefetch('recipes',
+                            queryset=Recipe.objects
+                            .filter(id__in=subscriptions_recipes_view))
+        qs = (users
+              .prefetch_related(prefetch)
+              .annotate(count=Count('recipes'))
+              .order_by('-count'))
+
+        # qs = User.objects.filter(following__follower=self.request.user).order_by('username').prefetch_related('recipes')
 
         return qs
 
     def get_context_data(self, *, object_list=None, **kwargs):
+        kwargs.update({'page_title': "Мои подписки"})
+
         context = super().get_context_data(**kwargs)
-        context['page_title'] = 'Мои подписки'
 
         return context
 
