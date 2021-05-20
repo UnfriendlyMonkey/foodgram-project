@@ -200,9 +200,24 @@ def new_recipe(request):
 
 
 def shopping_cart_download(request):
-    ingredients = Ingredient.objects.all()[:15]
+    if request.user.is_authenticated:
+        cart = ShoppingCart.objects.filter(user=request.user)
+        recipes = Recipe.objects.filter(in_cart__in=cart)
+    else:
+        recipes = Recipe.objects.filter(id__in=request.session['cart'])
+    ingredients_list = RecipeIngredient.objects.filter(recipe__in=recipes)
+    ingredients = {}
+    for item in ingredients_list:
+        name = item.ingredient.name
+        if name in ingredients.keys():
+            ingredients[name]['quantity'] += item.quantity
+        else:
+            ingredients[name] = {
+                'quantity': item.quantity,
+                'unit': item.ingredient.unit
+            }
     to_string = render_to_string(
-        'cart_to_load.html', {'ingredients': ingredients}
+        'recipes/cart_to_load.html', {'ingredients': ingredients}
     )
     to_pdf = pdfkit.from_string(to_string, False)
     buffer = io.BytesIO(to_pdf)

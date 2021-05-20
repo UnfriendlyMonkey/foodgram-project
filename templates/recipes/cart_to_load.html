@@ -9,9 +9,9 @@
       <h1 class='title'>Список покупок</h1>
     </div>
     <div class='details'>
-      {% for name, quantity in ingredients.items %}
+      {% for name, value in ingredients.items %}
         <p>
-          {{ name }}: {{ quantity.value }} {{ quantity.unit }}
+          {{ name }}: {{ value.quantity }} {{ value.unit }}
         </p>
       {% endfor %}
     </div>
