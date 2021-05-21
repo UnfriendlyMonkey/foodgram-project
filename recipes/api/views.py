@@ -51,14 +51,32 @@ class ShoppingCart(APIView):
     """Add recipes to shopping card of authorized User and remove them"""
 
     def post(self, request):
-        Cart.objects.get_or_create(
-            user=request.user,
-            recipe_id=request.data.get('id'),
-        )
+        recipe_id = request.data.get('id')
+        if request.user.is_authenticated:
+            Cart.objects.get_or_create(
+                user=request.user,
+                recipe_id=recipe_id,
+            )
+            return Response({'success': True}, status=status.HTTP_200_OK)
+
+        if 'cart' not in request.session.keys():
+            request.session['cart'] = [recipe_id]
+        else:
+            if recipe_id in request.session['cart']:
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+            else:
+                request.session['cart'].append(recipe_id)
+                request.session.modified = True
         return Response({'success': True}, status=status.HTTP_200_OK)
 
     def delete(self, request, pk):
-        Cart.objects.filter(user=request.user, recipe_id=pk).delete()
+        if request.user.is_authenticated:
+            Cart.objects.filter(user=request.user, recipe_id=pk).delete()
+            return Response({'success': True}, status=status.HTTP_200_OK)
+        print(request.session['cart'])
+        print(pk)
+        request.session['cart'].remove(str(pk))
+        request.session.modified = True
         return Response({'success': True}, status=status.HTTP_200_OK)
 
 

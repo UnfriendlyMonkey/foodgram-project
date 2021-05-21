@@ -17,6 +17,10 @@
         <h1 class="main__title">{{ page_title }}</h1>
         {% include 'recipes/includes/tags.html' %}
     </div>
+<!--    {{ request.path }}-->
+<!--    {{ request.get_full_path }}-->
+<!--    {{ request.GET.urlencode }}-->
+<!--    {{ request.resolver_match.url_name }}-->
 
     {% block subscribe %}
     {% endblock %}

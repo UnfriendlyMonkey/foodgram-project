@@ -18,7 +18,7 @@ class IsFavoriteMixin:
     """Add annotation with favorite mark to the View."""
 
     def get_queryset(self):
-        """Annotate with favorite mark."""
+        """Annotate with favorite mark and shopping cart items."""
         qs = super().get_queryset()
         if 'cart' not in self.request.session.keys():
             self.request.session['cart'] = []
@@ -47,6 +47,17 @@ class BaseRecipeListView(IsFavoriteMixin, ListView):
         assert self.page_title, f"Attribute 'page_title' not set for {self.__class__.__name__}"
 
         return self.page_title
+
+    # def get_queryset(self):
+    #     if 'tags' not in self.request.session.keys():
+    #         self.request.session['tags'] = []
+    #         for tag in Tag.objects.all():
+    #             self.request.session['tags'].append(tag.slug)
+    #     qs = super().get_queryset()
+    #     tags = self.request.session['tags']
+    #     print(tags)
+    #
+    #     qs = qs.filter(tag__slug__in=tags)
 
 
 class IndexView(BaseRecipeListView):
@@ -169,7 +180,7 @@ class CartListView(ListView):
         if self.request.user.is_authenticated:
             queryset = Recipe.objects.filter(in_cart__user=self.request.user)
         else:
-            queryset = self.request.session['cart']
+            queryset = Recipe.objects.filter(id__in=self.request.session['cart'])
 
         return queryset
 
