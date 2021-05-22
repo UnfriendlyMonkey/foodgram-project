@@ -55,9 +55,22 @@ class BaseRecipeListView(IsFavoriteMixin, ListView):
     #             self.request.session['tags'].append(tag.slug)
     #     qs = super().get_queryset()
     #     tags = self.request.session['tags']
+    #     print(self.request.GET)
     #     print(tags)
+    #     if 'tag' in self.request.GET:
+    #         current_tag = self.request.GET['tag']
+    #         print(current_tag)
+    #         if current_tag in tags:
+    #             tags.remove(current_tag)
+    #         else:
+    #             tags.append(current_tag)
     #
-    #     qs = qs.filter(tag__slug__in=tags)
+    #     print(tags)
+    #     print(self.request.session['tags'])
+    #
+    #     qs = qs.filter(tag__slug__in=tags).distinct()
+    #
+    #     return qs
 
 
 class IndexView(BaseRecipeListView):
@@ -185,17 +198,36 @@ class CartListView(ListView):
         return queryset
 
 
-def parse_recipe(data):
+def parse_recipe(data, recipe):
     tags = []
     ingredients = {}
     for key, value in data.items():
         print(key, value)
         if value == 'on':
             tags.append(key)
-        if key.startswith('nameIngredient'):
+        # if key == 'nameIngredient':
+        #     ing_names = data.get('nameIngredient')
+        #     print(ing_names)
+        #     ing_values = data.get('valueIngredient')
+        #     print(ing_values)
+        #     for idx, item in enumerate(ing_names):
+        #         ingredients[item] = ing_values[idx]
+        if key.startswith('nameIngredient_'):
             index = key.split('_')[1]
             ingredients[value] = data.get(f'valueIngredient_{index}')
-    return tags, ingredients
+
+    for slug in tags:
+        tag = get_object_or_404(Tag, slug=slug)
+        recipe.tag.add(tag)
+
+    ingreds = []
+    for name, value in ingredients.items():
+        ingredient = get_object_or_404(Ingredient, name=name)
+        combination = RecipeIngredient(ingredient=ingredient, recipe=recipe, quantity=value)
+        ingreds.append(combination)
+    RecipeIngredient.objects.bulk_create(ingreds)
+
+    # return tags, ingredients
 
 
 @login_required
@@ -208,7 +240,6 @@ def new_recipe(request):
     print(form.data)
     print(form.is_valid())
     print(form.errors)
-    tags, ingredients = parse_recipe(request.POST)
 
     if form.is_valid():
         with transaction.atomic():
@@ -216,25 +247,54 @@ def new_recipe(request):
             recipe.user = request.user
             recipe.save()
 
-            for slug in tags:
-                tag = get_object_or_404(Tag, slug=slug)
-                print(tag)
-                recipe.tag.add(tag)
-            recipe.save()
+            parse_recipe(request.POST, recipe)
 
-            ingreds = []
-            for name, value in ingredients.items():
-                ingredient = get_object_or_404(Ingredient, name=name)
-                combination = RecipeIngredient(ingredient=ingredient, recipe=recipe, quantity=value)
-                ingreds.append(combination)
-            RecipeIngredient.objects.bulk_create(ingreds)
-            form.save_m2m()  # TODO - check if it's necessary here
         return redirect('detail', pk=recipe.id)
     return render(
         request,
         'recipes/new_recipe.html',
         {'form': form}
     )
+
+
+@login_required
+def edit_recipe(request, pk):
+    recipe = get_object_or_404(Recipe, id=pk)
+    author = recipe.user
+    if request.user != author:
+        return redirect('detail', pk)
+
+    form = RecipeForm(request.POST or None, files=request.FILES or None, instance=recipe)
+    tags = Tag.objects.all()
+    print(form.data)
+    print(form.is_valid())
+    print(form.errors)
+
+    if form.is_valid():
+        with transaction.atomic():
+            form.save()
+            RecipeIngredient.objects.filter(recipe=recipe).delete()
+
+            parse_recipe(request.POST, recipe)
+
+        return redirect('detail', pk=recipe.id)
+    return render(
+        request,
+        'recipes/edit_recipe.html',
+        {'form': form, 'recipe': recipe, 'tags': tags, 'edit_mode': True}
+    )
+
+
+@login_required
+def delete_recipe(request, pk):
+    recipe = get_object_or_404(Recipe, id=pk)
+    author = recipe.user
+    if request.user != author:
+        return redirect('detail', pk)
+
+    # TODO: check permissions
+    recipe.delete()
+    return redirect('index')
 
 
 def shopping_cart_download(request):
