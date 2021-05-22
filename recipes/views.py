@@ -37,7 +37,8 @@ class BaseRecipeListView(IsFavoriteMixin, ListView):
 
     def get_context_data(self, **kwargs):
         """Add page title to the context."""
-        kwargs.update({'page_title': self._get_page_title()})
+        tags = Tag.objects.all()
+        kwargs.update({'page_title': self._get_page_title(), 'tag_list': tags})
 
         context = super().get_context_data(**kwargs)
         return context
@@ -48,29 +49,27 @@ class BaseRecipeListView(IsFavoriteMixin, ListView):
 
         return self.page_title
 
-    # def get_queryset(self):
-    #     if 'tags' not in self.request.session.keys():
-    #         self.request.session['tags'] = []
-    #         for tag in Tag.objects.all():
-    #             self.request.session['tags'].append(tag.slug)
-    #     qs = super().get_queryset()
-    #     tags = self.request.session['tags']
-    #     print(self.request.GET)
-    #     print(tags)
-    #     if 'tag' in self.request.GET:
-    #         current_tag = self.request.GET['tag']
-    #         print(current_tag)
-    #         if current_tag in tags:
-    #             tags.remove(current_tag)
-    #         else:
-    #             tags.append(current_tag)
-    #
-    #     print(tags)
-    #     print(self.request.session['tags'])
-    #
-    #     qs = qs.filter(tag__slug__in=tags).distinct()
-    #
-    #     return qs
+    def get_queryset(self):
+        # if 'tags' not in self.request.session.keys():
+        #     self.request.session['tags'] = []
+        #     for tag in Tag.objects.all():
+        #         self.request.session['tags'].append(tag.slug)
+        qs = super().get_queryset()
+        # tags = self.request.session['tags']
+        tags = self.request.GET.getlist('active_tags')
+        print(self.request.GET)
+        print(tags)
+        # if 'tag' in self.request.GET:
+        #     current_tag = self.request.GET['tag']
+        #     print(current_tag)
+        #     if current_tag in tags:
+        #         tags.remove(current_tag)
+        #     else:
+        #         tags.append(current_tag)
+        if tags:
+            qs = qs.filter(tag__slug__in=tags).distinct()
+
+        return qs
 
 
 class IndexView(BaseRecipeListView):
@@ -98,7 +97,7 @@ class ProfileView(BaseRecipeListView):
     template_name = 'recipes/author_recipes_list.html'
 
     def get(self, request, *args, **kwargs):
-        """Store `user` parameter for data filtration purposes."""
+        """Store `user`s parameter for data filtration purposes."""
         self.user = get_object_or_404(User, username=kwargs.get('username'))
 
         return super().get(request, *args, **kwargs)
@@ -117,7 +116,6 @@ class ProfileView(BaseRecipeListView):
         return qs
 
     def _get_page_title(self):
-        """Get page title."""
         return self.user.get_full_name()
 
 
@@ -205,13 +203,7 @@ def parse_recipe(data, recipe):
         print(key, value)
         if value == 'on':
             tags.append(key)
-        # if key == 'nameIngredient':
-        #     ing_names = data.get('nameIngredient')
-        #     print(ing_names)
-        #     ing_values = data.get('valueIngredient')
-        #     print(ing_values)
-        #     for idx, item in enumerate(ing_names):
-        #         ingredients[item] = ing_values[idx]
+
         if key.startswith('nameIngredient_'):
             index = key.split('_')[1]
             ingredients[value] = data.get(f'valueIngredient_{index}')
@@ -226,8 +218,6 @@ def parse_recipe(data, recipe):
         combination = RecipeIngredient(ingredient=ingredient, recipe=recipe, quantity=value)
         ingreds.append(combination)
     RecipeIngredient.objects.bulk_create(ingreds)
-
-    # return tags, ingredients
 
 
 @login_required

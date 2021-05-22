@@ -9,6 +9,7 @@ views_patterns = [
     path('', views.IndexView.as_view(), name='index'),
     path('favorites/', views.FavoriteView.as_view(), name='favorites'),
     path('profiles/<str:username>/', views.ProfileView.as_view(), name='profile'),
+    path('profiles/', views.ProfileView.as_view(), name='profile'),
     path('subscriptions/', views.SubscriptionsView.as_view(), name='subscriptions'),
     path('recipes/<int:pk>/', views.RecipeDetailView.as_view(), name='detail'),
     path('recipes/<int:pk>/edit/', views.edit_recipe, name='edit_recipe'),
