@@ -50,22 +50,12 @@ class BaseRecipeListView(IsFavoriteMixin, ListView):
         return self.page_title
 
     def get_queryset(self):
-        # if 'tags' not in self.request.session.keys():
-        #     self.request.session['tags'] = []
-        #     for tag in Tag.objects.all():
-        #         self.request.session['tags'].append(tag.slug)
+
         qs = super().get_queryset()
-        # tags = self.request.session['tags']
         tags = self.request.GET.getlist('active_tags')
         print(self.request.GET)
         print(tags)
-        # if 'tag' in self.request.GET:
-        #     current_tag = self.request.GET['tag']
-        #     print(current_tag)
-        #     if current_tag in tags:
-        #         tags.remove(current_tag)
-        #     else:
-        #         tags.append(current_tag)
+
         if tags:
             qs = qs.filter(tag__slug__in=tags).distinct()
 
@@ -170,8 +160,6 @@ class SubscriptionsView(LoginRequiredMixin, ListView):
               .prefetch_related(prefetch)
               .annotate(count=Count('recipes'))
               .order_by('-count'))
-
-        # qs = User.objects.filter(following__follower=self.request.user).order_by('username').prefetch_related('recipes')
 
         return qs
 

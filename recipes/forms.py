@@ -31,11 +31,9 @@ class RecipeForm(forms.ModelForm):
 				error_tag = False
 
 		if error_tag:
-			# self.add_error('tag', 'Добавьте хотя бы один тег')
 			raise forms.ValidationError('Добавьте хотя бы один тег')
 
 		if error_ingredient:
-			# self.add_error('ingredient', 'Добавьте ингредиенты')
 			raise forms.ValidationError('Добавьте ингредиенты')
 
 		data = ("title", "description", "cooking_time", "image")
