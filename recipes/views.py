@@ -222,9 +222,9 @@ def parse_recipe(data, recipe):
 
 @login_required
 def new_recipe(request):
+    tags = Tag.objects.all()
     if request.method != 'POST':
         form = RecipeForm()
-        tags = Tag.objects.all()
         return render(request, 'recipes/new_recipe.html', {'form': form, 'tags': tags})
     form = RecipeForm(request.POST or None, files=request.FILES or None)
     print(form.data)
@@ -243,7 +243,7 @@ def new_recipe(request):
     return render(
         request,
         'recipes/new_recipe.html',
-        {'form': form}
+        {'form': form, 'tags': tags}
     )
 
 

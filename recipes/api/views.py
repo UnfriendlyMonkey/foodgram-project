@@ -91,7 +91,8 @@ class IngredientsViewSet(generics.ListAPIView):
         query = self.request.query_params.get('query')
         print(query)
         if query:
-            ingredients = Ingredient.objects.filter(name__startswith=query)[:25]
+            # ingredients = Ingredient.objects.filter(name__startswith=query)[:25]
+            ingredients = Ingredient.objects.filter(name__contains=query)[:25]
             print(ingredients)
             return ingredients
         return Ingredient.objects.all()
