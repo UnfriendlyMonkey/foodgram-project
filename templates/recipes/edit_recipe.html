@@ -114,7 +114,6 @@
             <span class="form__label">Загрузить фото</span>
             <div class="form__field-group">
                 {{ form.image }}
-<!--                <a href="{{ form.image.url }}">{{ form.image }}</a>-->
                 {% if form.image.errors %}
                     {% for error in form.image.errors %}
                         <span class="form__error">{{ error|escape }}</span>

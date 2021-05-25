@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import transaction
 from django.db.models import Subquery, Prefetch, OuterRef, Count
-from django.http import FileResponse
+from django.http import FileResponse, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.views.generic import DetailView, ListView
@@ -76,7 +76,6 @@ class FavoriteView(LoginRequiredMixin, BaseRecipeListView):
     def get_queryset(self):
         """Display favorite recipes only."""
         qs = super().get_queryset()
-        # TO DO - уточнить название фильтра
         qs = qs.filter(favorites__user=self.request.user)
 
         return qs
@@ -155,7 +154,6 @@ class SubscriptionsView(LoginRequiredMixin, ListView):
         prefetch = Prefetch('recipes',
                             queryset=Recipe.objects
                             .filter(id__in=subscriptions_recipes_view))
-        # TODO: как ограничить поля только нужными? values() не работает с Prefetch
         qs = (users
               .prefetch_related(prefetch)
               .annotate(count=Count('recipes'))
@@ -270,7 +268,6 @@ def delete_recipe(request, pk):
     if request.user != author:
         return redirect('detail', pk)
 
-    # TODO: check permissions
     recipe.delete()
     return redirect('index')
 
@@ -292,12 +289,18 @@ def shopping_cart_download(request):
                 'quantity': item.quantity,
                 'unit': item.ingredient.unit
             }
-    to_string = render_to_string(
-        'recipes/cart_to_load.html', {'ingredients': ingredients}
-    )
-    to_pdf = pdfkit.from_string(to_string, False)
-    buffer = io.BytesIO(to_pdf)
-    return FileResponse(buffer, as_attachment=True, filename='shopping_cart.pdf')
+
+    output = open('shopping_cart.txt', 'w+')
+    output.write('СПИСОК ПОКУПОК:\n')
+    for item, value in ingredients.items():
+        print(item, value)
+        output.write(f'{item}: {value["quantity"]} {value["unit"]}\n')
+    output.close()
+    download = open('shopping_cart.txt', 'r')
+    response = HttpResponse(download.read(), content_type='text/plain,charset=utf8')
+    response['Content-Disposition'] = 'attachment; filename="shopping_cart.txt"'
+    download.close()
+    return response
 
 
 def page_not_found(request, exception):
