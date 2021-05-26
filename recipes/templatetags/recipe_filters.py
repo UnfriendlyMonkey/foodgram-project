@@ -1,11 +1,11 @@
 from django import template
-from recipes.models import Follow
+from recipes.models import Favorite, Follow, ShoppingCart
 
 register = template.Library()
 
 
-@register.filter(name='followed_by')
-def followed_by(user, request_user):
+@register.filter(name='is_followed_by')
+def is_followed_by(user, request_user):
     return Follow.objects.filter(follower=request_user, following=user).exists()
 
 
@@ -34,7 +34,20 @@ def construct_tag_link(request, tag):
 @register.filter(name='construct_page_link')
 def construct_page_link(request, page: int):
     new_request = request.GET.copy()
-    # page_list = []
-    # page_list.append(page)
     new_request.setlist('page', [str(page)])
     return new_request.urlencode()
+
+
+@register.filter
+def is_favorite(recipe, user):
+    return Favorite.objects.filter(recipe=recipe, user=user).exists()
+
+
+@register.filter
+def is_in_cart(recipe, request):
+    if request.user.is_authenticated:
+        return ShoppingCart.objects.filter(recipe=recipe, user=request.user).exists()
+    else:
+        if 'cart' not in request.session.keys():
+            request.session['cart'] = []
+        return (str(recipe.id) in request.session['cart'])

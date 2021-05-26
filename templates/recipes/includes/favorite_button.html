@@ -1,5 +1,6 @@
+{% load recipe_filters %}
 {% if user.is_authenticated %}
-    {% if recipe.is_favorite %}
+    {% if recipe|is_favorite:request.user %}
         <button class="button button_style_none" name="favorites">
             <span class="icon-favorite icon-favorite_active"></span>
         </button>

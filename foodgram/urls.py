@@ -8,28 +8,26 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path
 
-handler404 = "recipes.views.page_not_found"  # noqa
-handler500 = "recipes.views.server_error"  # noqa
+handler404 = 'recipes.views.page_not_found'
+handler500 = 'recipes.views.server_error'
 
 urlpatterns = [
     path('auth/', include('users.urls')),
     path('auth/', include('django.contrib.auth.urls')),
     path('admin/', admin.site.urls),
     path('about/', include('django.contrib.flatpages.urls')),
-    path('about-author/', views.flatpage, {'url': '/about-author/'}, name='author'),
-    path('about-spec/', views.flatpage, {'url': '/about-spec/'}, name='spec'),
     path('', include('recipes.urls')),
 ]
 
 if settings.DEBUG:
     import debug_toolbar
 
-    # Debug toolbar endpoints
+    """Debug toolbar endpoints"""
     urlpatterns += [
         path('__debug__/', include(debug_toolbar.urls)),
     ]
 
-    # Static files endpoints
+    """Static files endpoints"""
     urlpatterns += static(
         settings.MEDIA_URL,
         document_root=settings.MEDIA_ROOT

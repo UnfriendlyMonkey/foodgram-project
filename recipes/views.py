@@ -8,31 +8,18 @@ from django.http import FileResponse, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.views.generic import DetailView, ListView
-import pdfkit
 
 from recipes.forms import RecipeForm
-from recipes.models import Recipe, User, Follow, Ingredient, Tag, RecipeIngredient, ShoppingCart
+from recipes.models import Recipe, User, Follow, Ingredient,\
+    Tag, RecipeIngredient, ShoppingCart
+from django.conf import settings
 
 
-class IsFavoriteMixin:
-    """Add annotation with favorite mark to the View."""
-
-    def get_queryset(self):
-        """Annotate with favorite mark and shopping cart items."""
-        qs = super().get_queryset()
-        if 'cart' not in self.request.session.keys():
-            self.request.session['cart'] = []
-        if self.request.user.is_authenticated:
-            return qs.select_related('user').with_favorite_and_cart(user_id=self.request.user.id)
-
-        return qs.select_related('user').with_session_data(self.request.session['cart'])
-
-
-class BaseRecipeListView(IsFavoriteMixin, ListView):
+class BaseRecipeListView(ListView):
     """Base view for Recipe list."""
     context_object_name = 'recipe_list'
     queryset = Recipe.objects.all()
-    paginate_by = 6
+    paginate_by = settings.PAGINATED_BY
     page_title = None
 
     def get_context_data(self, **kwargs):
@@ -45,16 +32,13 @@ class BaseRecipeListView(IsFavoriteMixin, ListView):
 
     def _get_page_title(self):
         """Get page title."""
-        assert self.page_title, f"Attribute 'page_title' not set for {self.__class__.__name__}"
-
         return self.page_title
 
     def get_queryset(self):
-
+        """Get selected tag filters from query
+        and filtrate queryset according to them"""
         qs = super().get_queryset()
         tags = self.request.GET.getlist('active_tags')
-        print(self.request.GET)
-        print(tags)
 
         if tags:
             qs = qs.filter(tag__slug__in=tags).distinct()
@@ -93,7 +77,6 @@ class ProfileView(BaseRecipeListView):
 
     def get_context_data(self, **kwargs):
         kwargs.update({'author': self.user})
-
         context = super().get_context_data(**kwargs)
         return context
 
@@ -108,7 +91,7 @@ class ProfileView(BaseRecipeListView):
         return self.user.get_full_name()
 
 
-class RecipeDetailView(IsFavoriteMixin, DetailView):
+class RecipeDetailView(DetailView):
     """Page with Recipe details."""
     queryset = Recipe.objects.all()
     template_name = 'recipes/single_page.html'
@@ -119,7 +102,6 @@ class RecipeDetailView(IsFavoriteMixin, DetailView):
         qs = (
             qs
             .prefetch_related('recipe_ingredients__ingredient')
-            .with_favorite_and_cart(user_id=self.request.user.id)
         )
 
         return qs
@@ -145,15 +127,16 @@ class SubscriptionsView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         """Display subscriptions with their recipes."""
         qs = super().get_queryset()
-        users = User.objects\
-            .filter(following__follower=self.request.user)
+        users = User.objects.filter(following__follower=self.request.user)
 
-        subscriptions_recipes_view = Subquery(Recipe.objects
-                                              .filter(user_id=OuterRef('user_id'))
-                                              .values_list('id', flat=True)[:3])
-        prefetch = Prefetch('recipes',
-                            queryset=Recipe.objects
-                            .filter(id__in=subscriptions_recipes_view))
+        subscriptions_recipes_view = Subquery(
+            Recipe.objects.filter(
+                user_id=OuterRef('user_id')).values_list('id', flat=True)[:3]
+        )
+        prefetch = Prefetch(
+            'recipes',
+            queryset=Recipe.objects.filter(id__in=subscriptions_recipes_view)
+        )
         qs = (users
               .prefetch_related(prefetch)
               .annotate(count=Count('recipes'))
@@ -162,7 +145,7 @@ class SubscriptionsView(LoginRequiredMixin, ListView):
         return qs
 
     def get_context_data(self, *, object_list=None, **kwargs):
-        kwargs.update({'page_title': "Мои подписки"})
+        kwargs.update({'page_title': 'Мои подписки'})
         context = super().get_context_data(**kwargs)
 
         return context
@@ -177,7 +160,9 @@ class CartListView(ListView):
         if self.request.user.is_authenticated:
             queryset = Recipe.objects.filter(in_cart__user=self.request.user)
         else:
-            queryset = Recipe.objects.filter(id__in=self.request.session['cart'])
+            queryset = Recipe.objects.filter(
+                id__in=self.request.session['cart']
+            )
 
         return queryset
 
@@ -186,7 +171,6 @@ def parse_recipe(data, recipe):
     tags = []
     ingredients = {}
     for key, value in data.items():
-        print(key, value)
         if value == 'on':
             tags.append(key)
 
@@ -201,7 +185,9 @@ def parse_recipe(data, recipe):
     ingreds = []
     for name, value in ingredients.items():
         ingredient = get_object_or_404(Ingredient, name=name)
-        combination = RecipeIngredient(ingredient=ingredient, recipe=recipe, quantity=value)
+        combination = RecipeIngredient(
+            ingredient=ingredient, recipe=recipe, quantity=value
+        )
         ingreds.append(combination)
     RecipeIngredient.objects.bulk_create(ingreds)
 
@@ -211,26 +197,25 @@ def new_recipe(request):
     tags = Tag.objects.all()
     if request.method != 'POST':
         form = RecipeForm()
-        return render(request, 'recipes/new_recipe.html', {'form': form, 'tags': tags})
+        return render(
+            request, 'recipes/new_recipe.html', {'form': form, 'tags': tags}
+        )
     form = RecipeForm(request.POST or None, files=request.FILES or None)
-    print(form.data)
-    print(form.is_valid())
-    print(form.errors)
 
-    if form.is_valid():
-        with transaction.atomic():
-            recipe = form.save(commit=False)
-            recipe.user = request.user
-            recipe.save()
+    if not form.is_valid():
+        return render(
+            request,
+            'recipes/new_recipe.html',
+            {'form': form, 'tags': tags}
+        )
+    with transaction.atomic():
+        recipe = form.save(commit=False)
+        recipe.user = request.user
+        recipe.save()
 
-            parse_recipe(request.POST, recipe)
+        parse_recipe(request.POST, recipe)
 
-        return redirect('detail', pk=recipe.id)
-    return render(
-        request,
-        'recipes/new_recipe.html',
-        {'form': form, 'tags': tags}
-    )
+    return redirect('detail', pk=recipe.id)
 
 
 @login_required
@@ -240,25 +225,24 @@ def edit_recipe(request, pk):
     if request.user != author:
         return redirect('detail', pk)
 
-    form = RecipeForm(request.POST or None, files=request.FILES or None, instance=recipe)
-    tags = Tag.objects.all()
-    print(form.data)
-    print(form.is_valid())
-    print(form.errors)
-
-    if form.is_valid():
-        with transaction.atomic():
-            form.save()
-            RecipeIngredient.objects.filter(recipe=recipe).delete()
-
-            parse_recipe(request.POST, recipe)
-
-        return redirect('detail', pk=recipe.id)
-    return render(
-        request,
-        'recipes/edit_recipe.html',
-        {'form': form, 'recipe': recipe, 'tags': tags, 'edit_mode': True}
+    form = RecipeForm(
+        request.POST or None, files=request.FILES or None, instance=recipe
     )
+    tags = Tag.objects.all()
+
+    if not form.is_valid():
+        return render(
+            request,
+            'recipes/edit_recipe.html',
+            {'form': form, 'recipe': recipe, 'tags': tags, 'edit_mode': True}
+        )
+    with transaction.atomic():
+        form.save()
+        RecipeIngredient.objects.filter(recipe=recipe).delete()
+
+        parse_recipe(request.POST, recipe)
+
+    return redirect('detail', pk=recipe.id)
 
 
 @login_required
@@ -293,11 +277,12 @@ def shopping_cart_download(request):
     output = open('shopping_cart.txt', 'w+')
     output.write('СПИСОК ПОКУПОК:\n')
     for item, value in ingredients.items():
-        print(item, value)
         output.write(f'{item}: {value["quantity"]} {value["unit"]}\n')
     output.close()
     download = open('shopping_cart.txt', 'r')
-    response = HttpResponse(download.read(), content_type='text/plain,charset=utf8')
+    response = HttpResponse(
+        download.read(), content_type='text/plain,charset=utf8'
+    )
     response['Content-Disposition'] = 'attachment; filename="shopping_cart.txt"'
     download.close()
     return response
@@ -306,8 +291,8 @@ def shopping_cart_download(request):
 def page_not_found(request, exception):
     return render(
         request,
-        "misc/404.html",
-        {"path": request.path},
+        'misc/404.html',
+        {'path': request.path},
         status=404
     )
 
@@ -315,6 +300,6 @@ def page_not_found(request, exception):
 def server_error(request):
     return render(
         request,
-        "misc/500.html",
+        'misc/500.html',
         status=500
     )

@@ -1,44 +1,42 @@
 from django import forms
-# from django.forms import CheckboxSelectMultiple
 
-from .models import Recipe, Ingredient, Tag
+from .models import Recipe, Tag
 
 
 class RecipeForm(forms.ModelForm):
-	class Meta:
-		model = Recipe
+    class Meta:
+        model = Recipe
 
-		fields = ("title", "description", "cooking_time", "image")
+        fields = ('title', 'description', 'cooking_time', 'image')
 
-		image = forms.FileField(
-			widget=forms.ClearableFileInput(attrs={'class': 'form__file'}),
-			required=True)
+        image = forms.FileField(
+            widget=forms.ClearableFileInput(attrs={'class': 'form__file'}),
+            required=True)
 
-	def clean(self):
+    def clean(self):
 
-		cleaned_data = super().clean()
-		print(cleaned_data)
+        cleaned_data = super().clean()
 
-		tags = [item[0] for item in Tag.objects.values_list('slug')]
+        tags = [item[0] for item in Tag.objects.values_list('slug')]
 
-		error_tag = True
-		error_ingredient = True
+        error_tag = True
+        error_ingredient = True
 
-		for key in self.data.keys():
-			if 'nameIngredient' in key:
-				error_ingredient = False
-			if key in tags:
-				error_tag = False
+        for key in self.data.keys():
+            if 'nameIngredient' in key:
+                error_ingredient = False
+            if key in tags:
+                error_tag = False
 
-		if error_tag:
-			raise forms.ValidationError('Добавьте хотя бы один тег')
+        if error_tag:
+            raise forms.ValidationError('Добавьте хотя бы один тег')
 
-		if error_ingredient:
-			raise forms.ValidationError('Добавьте ингредиенты')
+        if error_ingredient:
+            raise forms.ValidationError('Добавьте ингредиенты')
 
-		data = ("title", "description", "cooking_time", "image")
-		for item in data:
-			if not cleaned_data[item]:
-				raise forms.ValidationError("Ваш рецепт неполон")
+        data = ('title', 'description', 'cooking_time', 'image')
+        for item in data:
+            if not cleaned_data[item]:
+                raise forms.ValidationError('Ваш рецепт неполон')
 
-		return cleaned_data
+        return cleaned_data

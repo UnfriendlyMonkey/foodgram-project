@@ -1,3 +1,5 @@
+{% load recipe_filters %}
+
 <div class="card" data-id="{{ recipe.id }}">
 
     {% if recipe.image %}
@@ -28,7 +30,7 @@
     </div>
 
     <div class="card__footer">
-        {% if recipe.is_in_cart %}
+        {% if recipe|is_in_cart:request %}
             <button class="button button_style_light-blue" name="purchases">
                 Удалить из покупок
             </button>

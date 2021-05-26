@@ -7,48 +7,52 @@ from recipes.models import Favorite, Follow, Ingredient, ShoppingCart as Cart
 
 
 class AddToFavorites(APIView):
-    """Add a Recipe to Favorites of a User."""
+    """Add a Recipe to Favorites of a User"""
 
     def post(self, request, format=None):
         Favorite.objects.get_or_create(
             user=request.user,
-            recipe_id=request.data['id'],
+            recipe_id=request.data.get('id'),
         )
 
         return Response({'success': True}, status=status.HTTP_200_OK)
 
 
 class RemoveFromFavorites(APIView):
-    """Remove a Recipe from User's Favorites."""
+    """Remove a Recipe from User's Favorites"""
 
     def delete(self, request, pk, format=None):
-        Favorite.objects.filter(recipe_id=pk, user=request.user).delete()
+        object_to_del = generics.get_object_or_404(
+            Favorite, recipe_id=pk, user=request.user
+        )
+        object_to_del.delete()
         return Response({'success': True}, status=status.HTTP_200_OK)
 
 
 class AddSubscription(APIView):
-    """Follow the User."""
+    """Follow the User"""
 
     def post(self, request, format=None):
-        print(request.data, request.user)
         Follow.objects.get_or_create(
             follower=request.user,
-            following_id=request.data['id'],
+            following_id=request.data.get('id'),
         )
         return Response({'success': True}, status=status.HTTP_200_OK)
 
 
 class RemoveSubscription(APIView):
-    """Unfollow the User."""
+    """Unfollow the User"""
 
     def delete(self, request, pk, format=None):
-        print(pk, request.data)
-        Follow.objects.filter(following_id=pk, follower=request.user).delete()
+        object_to_del = generics.get_object_or_404(
+            Follow, following_id=pk, follower=request.user
+        )
+        object_to_del.delete()
         return Response({'success': True}, status=status.HTTP_200_OK)
 
 
-class ShoppingCart(APIView):
-    """Add recipes to shopping card of authorized User and remove them"""
+class AddPurchase(APIView):
+    """Add recipes to shopping cart"""
 
     def post(self, request):
         recipe_id = request.data.get('id')
@@ -59,39 +63,40 @@ class ShoppingCart(APIView):
             )
             return Response({'success': True}, status=status.HTTP_200_OK)
 
-        if 'cart' not in request.session.keys():
+        if 'cart' not in request.session:
             request.session['cart'] = [recipe_id]
-        else:
-            if recipe_id in request.session['cart']:
-                return Response(status=status.HTTP_400_BAD_REQUEST)
-            else:
-                request.session['cart'].append(recipe_id)
-                request.session.modified = True
+        if recipe_id in request.session['cart']:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        request.session['cart'].append(recipe_id)
+        request.session.modified = True
         return Response({'success': True}, status=status.HTTP_200_OK)
+
+
+class DeletePurchase(APIView):
+    """Remove recipes from shopping cart"""
 
     def delete(self, request, pk):
         if request.user.is_authenticated:
-            Cart.objects.filter(user=request.user, recipe_id=pk).delete()
+            object_to_del = generics.get_object_or_404(
+                Cart, user=request.user, recipe_id=pk
+            )
+            object_to_del.delete()
             return Response({'success': True}, status=status.HTTP_200_OK)
-        print(request.session['cart'])
-        print(pk)
         request.session['cart'].remove(str(pk))
         request.session.modified = True
         return Response({'success': True}, status=status.HTTP_200_OK)
 
 
 class IngredientsViewSet(generics.ListAPIView):
+    """Get list of ingredients in new or edit recipe form"""
+
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
 
     def get_queryset(self):
-        """
-        Returns queryset filtered by first letters of query.
-        """
+        """Returns queryset filtered by first letters of query"""
         query = self.request.query_params.get('query')
-        print(query)
-        if query:
-            ingredients = Ingredient.objects.filter(name__contains=query)[:25]
-            print(ingredients)
-            return ingredients
-        return Ingredient.objects.all()
+        if not query:
+            return Ingredient.objects.all()
+        ingredients = Ingredient.objects.filter(name__contains=query)
+        return ingredients

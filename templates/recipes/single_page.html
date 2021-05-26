@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load user_filters %}
+{% load recipe_filters %}
 {% load static %}
 
 
@@ -27,7 +28,7 @@
                         {% include 'recipes/includes/favorite_button.html' %}
 
                         <div class="single-card__favorite-tooltip tooltip">
-                            {% if recipe.is_favorite %}
+                            {% if recipe|is_favorite:request.user %}
                                 Убрать из избранного
                             {% else %}
                                 Добавить в избранное
@@ -64,7 +65,7 @@
             </div>
 
             <ul class="single-card__items">
-                {% if recipe.is_in_cart %}
+                {% if recipe|is_in_cart:request %}
                     <li class="single-card__item">
                         <button class="button button_style_blue" name="purchases">
                             Удалить из покупок
@@ -79,7 +80,7 @@
                     </li>
                 {% endif %}
                 {% if user.is_authenticated and user != recipe.user %}
-                    {% if followed_by %}
+                    {% if recipe.user|is_followed_by:request.user %}
                         <li class="single-card__item">
                             <button class="button button_style_light-blue button_size_subscribe" name="subscribe">
                                 Отписаться от автора
