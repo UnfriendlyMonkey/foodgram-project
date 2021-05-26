@@ -161,7 +161,7 @@ class CartListView(ListView):
             queryset = Recipe.objects.filter(in_cart__user=self.request.user)
         else:
             queryset = Recipe.objects.filter(
-                id__in=self.request.session['cart']
+                id__in=self.request.session.get('cart')
             )
 
         return queryset
