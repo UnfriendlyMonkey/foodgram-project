@@ -86,6 +86,18 @@ DATABASES = {
     }
 }
 
+if DEBUG == False:
+    DATABASES = {
+        'default': {
+            'ENGINE': env('DB_ENGINE'),
+            'NAME': env('DB_NAME'),
+            'USER': env('POSTGRES_USER'),
+            'PASSWORD': env('POSTGRES_PASSWORD'),
+            'HOST': env('DB_HOST'),
+            'PORT': env('DB_PORT'),
+        }
+    }
+
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
