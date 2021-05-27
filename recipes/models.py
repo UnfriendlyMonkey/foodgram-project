@@ -10,6 +10,10 @@ class Tag(models.Model):
     slug = models.SlugField(unique=True)
     color = models.CharField(max_length=50)
 
+    class Meta:
+        verbose_name = 'Тег'
+        verbose_name_plural = 'Теги'
+    
     def __str__(self):
         return self.name
 
@@ -84,6 +88,10 @@ class RecipeIngredient(models.Model):
     )
     quantity = models.PositiveIntegerField(verbose_name='Количество')
 
+    class Meta:
+        verbose_name = 'Ингредиент в рецепте'
+        verbose_name_plural = 'Ингредиенты в рецептах'
+
 
 class Follow(models.Model):
     follower = models.ForeignKey(
@@ -100,6 +108,8 @@ class Follow(models.Model):
     )
 
     class Meta:
+        verbose_name = 'Подписка'
+        verbose_name_plural = 'Подписки'
         constraints = (
             models.UniqueConstraint(
                 fields=('follower', 'following'),
@@ -129,6 +139,8 @@ class Favorite(models.Model):
         return f'{self.user} добавил {self.recipe} в избранное'
 
     class Meta:
+        verbose_name = 'Избранное'
+        verbose_name_plural = 'Избранное'
         constraints = (
             models.UniqueConstraint(
                 fields=('user', 'recipe'),
@@ -155,6 +167,8 @@ class ShoppingCart(models.Model):
         return f'{self.user} добавил {self.recipe} в список покупок'
 
     class Meta:
+        verbose_name = 'Корзина'
+        verbose_name_plural = 'Корзина'
         constraints = (
             models.UniqueConstraint(
                 fields=('user', 'recipe'),

@@ -1,17 +1,25 @@
-import io
+import csv
 
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import transaction
 from django.db.models import Subquery, Prefetch, OuterRef, Count
-from django.http import FileResponse, HttpResponse
+from django.http import HttpResponse, response
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.views.generic import DetailView, ListView
+from django_filters.rest_framework import DjangoFilterBackend
 
 from recipes.forms import RecipeForm
-from recipes.models import Recipe, User, Follow, Ingredient,\
-    Tag, RecipeIngredient, ShoppingCart
+from recipes.models import (
+    Recipe,
+    User,
+    Follow,
+    Ingredient,
+    Tag,
+    RecipeIngredient,
+    ShoppingCart
+)
 from django.conf import settings
 
 
@@ -120,7 +128,7 @@ class SubscriptionsView(LoginRequiredMixin, ListView):
     """List of current user's subscriptions."""
     page_title = 'Мои подписки'
     context_object_name = 'subscriptions_list'
-    paginate_by = 6
+    paginate_by = settings.PAGINATED_BY
     template_name = 'recipes/subscriptions.html'
     queryset = User.objects.all()
 
@@ -274,17 +282,17 @@ def shopping_cart_download(request):
                 'unit': item.ingredient.unit
             }
 
-    output = open('shopping_cart.txt', 'w+')
-    output.write('СПИСОК ПОКУПОК:\n')
-    for item, value in ingredients.items():
-        output.write(f'{item}: {value["quantity"]} {value["unit"]}\n')
-    output.close()
-    download = open('shopping_cart.txt', 'r')
     response = HttpResponse(
-        download.read(), content_type='text/plain,charset=utf8'
+        content_type='text/csv,charset=utf8',
+        headers={'Content-Disposition': 'attachment; filename="shopping_cart.csv"'},
     )
-    response['Content-Disposition'] = 'attachment; filename="shopping_cart.txt"'
-    download.close()
+
+    writer = csv.writer(response)
+    writer.writerow(['СПИСОК ПОКУПОК:'])
+    writer.writerow(['Ингредиент', 'количество', 'ед. измерения'])
+    for item, value in ingredients.items():
+        writer.writerow([f'{item}:', value["quantity"], value["unit"]])
+
     return response
 
 

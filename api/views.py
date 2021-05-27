@@ -2,7 +2,7 @@ from rest_framework import status, mixins, viewsets, filters, generics
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from recipes.api.serializers import IngredientSerializer
+from api.serializers import IngredientSerializer
 from recipes.models import Favorite, Follow, Ingredient, ShoppingCart as Cart
 
 

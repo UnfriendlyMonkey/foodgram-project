@@ -26,6 +26,7 @@ ALLOWED_HOSTS = [
 INSTALLED_APPS = [
     'recipes',
     'users',
+    'api',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -34,6 +35,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.sites',
     'django.contrib.flatpages',
+    'django_filters',
     'debug_toolbar',
 ]
 

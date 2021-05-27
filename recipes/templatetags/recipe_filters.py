@@ -28,6 +28,7 @@ def construct_tag_link(request, tag):
         new_request.pop('page')
 
     new_request.setlist('active_tags', tags)
+    new_request.setlist('tag', tags)
     return new_request.urlencode()
 
 
@@ -47,7 +48,6 @@ def is_favorite(recipe, user):
 def is_in_cart(recipe, request):
     if request.user.is_authenticated:
         return ShoppingCart.objects.filter(recipe=recipe, user=request.user).exists()
-    else:
-        if 'cart' not in request.session.keys():
-            request.session['cart'] = []
-        return (str(recipe.id) in request.session['cart'])
+    if 'cart' not in request.session.keys():
+        request.session['cart'] = []
+    return (str(recipe.id) in request.session['cart'])

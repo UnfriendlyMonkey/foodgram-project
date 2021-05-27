@@ -17,6 +17,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('about/', include('django.contrib.flatpages.urls')),
     path('', include('recipes.urls')),
+    path('api/', include('api.urls')),
 ]
 
 if settings.DEBUG:

@@ -3,8 +3,7 @@ from django.urls import include, path
 from rest_framework.urlpatterns import format_suffix_patterns
 
 from recipes import views
-from .api.views import AddToFavorites, RemoveFromFavorites, AddSubscription,\
-    RemoveSubscription, IngredientsViewSet, AddPurchase, DeletePurchase
+
 
 views_patterns = [
     path('',
@@ -31,17 +30,6 @@ views_patterns = [
         views.CartListView.as_view(), name='cart_view')
 ]
 
-api_patterns = [
-    path('ingredients', IngredientsViewSet.as_view()),
-    path('favorites/', AddToFavorites.as_view()),
-    path('favorites/<int:pk>/', RemoveFromFavorites.as_view()),
-    path('subscriptions/', AddSubscription.as_view()),
-    path('subscriptions/<int:pk>/', RemoveSubscription.as_view()),
-    path('purchases/', AddPurchase.as_view(), name='cart_add'),
-    path('purchases/<int:pk>/', DeletePurchase.as_view(), name='cart_delete'),
-]
-
 urlpatterns = [
     path('', include(views_patterns)),
-    path('api/', include(format_suffix_patterns(api_patterns)))
 ]
