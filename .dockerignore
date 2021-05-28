@@ -1,0 +1,19 @@
+.git
+.gitignore
+.gitattributes
+
+.venv/
+venv/
+
+# VS Code
+.vscode/
+
+# PyCharm
+.idea
+
+# Django stuff:
+*.log
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt

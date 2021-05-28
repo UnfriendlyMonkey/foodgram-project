@@ -1,12 +1,10 @@
+# deleted unused reqs for production
 asgiref==3.3.4
 Django==3.2.2
-django-debug-toolbar==3.2.1
 django-environ==0.4.5
 django-filter==2.4.0
 django-pdfkit==0.3.1
 djangorestframework==3.12.4
-factory-boy==3.2.0
-Faker==8.1.3
 gunicorn==20.1.0
 pdfkit==0.6.0
 Pillow==8.2.0
