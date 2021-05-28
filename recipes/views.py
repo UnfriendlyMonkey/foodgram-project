@@ -9,6 +9,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.views.generic import DetailView, ListView
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import status
 
 from recipes.forms import RecipeForm
 from recipes.models import (
@@ -274,7 +275,7 @@ def shopping_cart_download(request):
     ingredients = {}
     for item in ingredients_list:
         name = item.ingredient.name
-        if name in ingredients.keys():
+        if name in ingredients:
             ingredients[name]['quantity'] += item.quantity
         else:
             ingredients[name] = {
@@ -301,7 +302,7 @@ def page_not_found(request, exception):
         request,
         'misc/404.html',
         {'path': request.path},
-        status=404
+        status=status.HTTP_404_NOT_FOUND
     )
 
 
@@ -309,5 +310,5 @@ def server_error(request):
     return render(
         request,
         'misc/500.html',
-        status=500
+        status=status.HTTP_500_INTERNAL_SERVER_ERROR
     )

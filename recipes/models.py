@@ -92,6 +92,9 @@ class RecipeIngredient(models.Model):
         verbose_name = 'Ингредиент в рецепте'
         verbose_name_plural = 'Ингредиенты в рецептах'
 
+    def __str__(self):
+        return f'{self.ingredient} в {self.recipe}'
+
 
 class Follow(models.Model):
     follower = models.ForeignKey(
@@ -135,9 +138,6 @@ class Favorite(models.Model):
         verbose_name='Любимый рецепт'
     )
 
-    def __str__(self):
-        return f'{self.user} добавил {self.recipe} в избранное'
-
     class Meta:
         verbose_name = 'Избранное'
         verbose_name_plural = 'Избранное'
@@ -147,6 +147,9 @@ class Favorite(models.Model):
                 name='unique_favorite'
             ),
         )
+
+    def __str__(self):
+        return f'{self.user} добавил {self.recipe} в избранное'
 
 
 class ShoppingCart(models.Model):
@@ -163,9 +166,6 @@ class ShoppingCart(models.Model):
         verbose_name='Рецепт для покупки'
     )
 
-    def __str__(self):
-        return f'{self.user} добавил {self.recipe} в список покупок'
-
     class Meta:
         verbose_name = 'Корзина'
         verbose_name_plural = 'Корзина'
@@ -175,3 +175,6 @@ class ShoppingCart(models.Model):
                 name='unique_shopping_cart'
             ),
         )
+
+    def __str__(self):
+        return f'{self.user} добавил {self.recipe} в список покупок'
