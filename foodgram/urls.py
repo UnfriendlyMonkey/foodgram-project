@@ -19,21 +19,3 @@ urlpatterns = [
     path('', include('recipes.urls')),
     path('api/', include('api.urls')),
 ]
-
-if settings.DEBUG:
-    import debug_toolbar
-
-    """Debug toolbar endpoints"""
-    urlpatterns += [
-        path('__debug__/', include(debug_toolbar.urls)),
-    ]
-
-    """Static files endpoints"""
-    urlpatterns += static(
-        settings.MEDIA_URL,
-        document_root=settings.MEDIA_ROOT
-    )
-    urlpatterns += static(
-        settings.STATIC_URL,
-        document_root=settings.STATIC_ROOT
-    )

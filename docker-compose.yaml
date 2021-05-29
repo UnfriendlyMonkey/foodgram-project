@@ -10,6 +10,8 @@ services:
   web:
     build: .
     restart: always
+    ports: 
+      - "8000:8000"
     volumes:
       - static_value:/code/static/
       - media_value:/code/media/
@@ -17,7 +19,6 @@ services:
       - db
     env_file:
       - ./.env
-    command: bash -c "python manage.py collectstatic --noinput && python manage.py migrate && python manage.py fill_tags && python manage.py load ingredients && gunicorn foodgram.wsgi:application --bind 0.0.0.0:8000"
 
   nginx:
     image: nginx:1.19.3

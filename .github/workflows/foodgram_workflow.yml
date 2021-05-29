@@ -71,7 +71,7 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           passphrase: ${{ secrets.PASSPHRASE }}
           source: ".env,docker-compose.yaml,Dockerfile,nginx/default.conf,requirements.txt"
-          target: "project"
+          target: "fg"
       - name: executing remote ssh commands to deploy
         uses: appleboy/ssh-action@master
         with:
@@ -80,8 +80,8 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           passphrase: ${{ secrets.PASSPHRASE }}
           script: |
-            sudo docker-compose -f ~/foodgram-project/docker-compose.yaml pull web
-            sudo docker-compose -f ~/foodgram-project/docker-compose.yaml up --build -d
+            sudo docker-compose -f ~/fg/docker-compose.yaml pull web
+            sudo docker-compose -f ~/fg/docker-compose.yaml up --build -d
             sudo docker image prune -f
 
 
