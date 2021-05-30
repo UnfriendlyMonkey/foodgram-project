@@ -1,6 +1,10 @@
 # Личный проект Foodgram
 [адрес на github](https://github.com/andreysereda1976/foodgram-project)
+
+![foodgram_workflow](https://github.com/andreysereda1976/foodgram-project/actions/workflows/foodgram_workflow.yml/badge.svg)
+
 [Проект временно запущен по адресу: http://84.201.166.64/](http://84.201.166.64/)
+
 - Студент: Андрей Середа (10 когорта).
 - Ревьюер: Станислав Лосев.
 

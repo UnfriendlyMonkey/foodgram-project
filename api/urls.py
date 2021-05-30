@@ -2,8 +2,15 @@ from django.urls import include, path
 
 from rest_framework.urlpatterns import format_suffix_patterns
 
-from .views import AddToFavorites, RemoveFromFavorites, AddSubscription,\
-    RemoveSubscription, IngredientsViewSet, AddPurchase, DeletePurchase
+from .views import (
+    AddToFavorites,
+    RemoveFromFavorites,
+    AddSubscription,
+    RemoveSubscription,
+    IngredientsViewSet,
+    AddPurchase,
+    DeletePurchase
+)
 
 api_patterns = [
     path('ingredients', IngredientsViewSet.as_view()),
