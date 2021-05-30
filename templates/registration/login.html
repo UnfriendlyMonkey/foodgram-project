@@ -15,7 +15,6 @@
                         type="text"
                         name="username"
                         id="{{ form.username.id_for_label }}"
-                        value="{{ form.username.value }}"
                         class="form__input">
                 {% if form.username.errors %}
                     {% for error in form.username.errors %}
@@ -32,7 +31,6 @@
                         type="password"
                         name="password"
                         id="{{ form.password.id_for_label }}"
-                        value="{{ form.password.value }}"
                         class="form__input">
                 {% if form.password.errors %}
                     {% for error in form.password.errors %}
