@@ -114,16 +114,13 @@ LOGIN_URL = '/auth/login/'
 LOGIN_REDIRECT_URL = 'index'
 LOGOUT_REDIRECT_URL = 'index'
 
-if DEBUG:
-    EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
-    EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'sent_emails')
-    EMAIL_HOST_USER = 'debug@example.com'
-else:
-    EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
-    EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', 'your_account@gmail.com')
-    EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', 'your_password')
-    EMAIL_PORT = int(os.getenv('EMAIL_PORT', default=587))
-    EMAIL_USE_TLS = int(os.getenv('EMAIL_USE_TLS', default=1))
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', 'your_account@gmail.com')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', 'your_password')
+EMAIL_PORT = int(os.getenv('EMAIL_PORT', default=587))
+EMAIL_USE_TLS = int(os.getenv('EMAIL_USE_TLS', default=True))
+EMAIL_USE_SSL = False
 
 SITE_ID = 1
 
