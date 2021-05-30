@@ -4,11 +4,9 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import transaction
 from django.db.models import Subquery, Prefetch, OuterRef, Count
-from django.http import HttpResponse, response
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django.template.loader import render_to_string
 from django.views.generic import DetailView, ListView
-from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 
 from recipes.forms import RecipeForm
