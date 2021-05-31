@@ -11,26 +11,25 @@
 
 {% block content %}
 
-<main role="main" class="container">
-<div class="row">
-    <div class="col-md-12">
-        <h1>Ошибка 500</h1>
-        <p class="lead">Ошибка на сервере, попробуйте обновить страницу или обратиться позже</p>
-        <p class="lead"><a href="{% url 'index' %}">Вернуться на главную</a></p>
+<div class="main__header">
+    <h1 class="main__title" style="text-align: center">Ошибка 500</h1>
+</div>
+<div class="custom-center-block">
+    <p class="custom-text-block">Ошибка на сервере, попробуйте обновить страницу или обратиться позже</p>
+    <div class="custom-button-block">
+        <a class="button button_style_blue" href="{% url 'index' %}">
+            Перейти на главную
+        </a>
     </div>
 </div>
-</main>
 
 {% endblock %}
 
 {% block static_js %}
 
     <script src="{% static 'js/components/Purchases.js' %}"></script>
-
     <script src="{% static 'js/config/config.js' %}"></script>
     <script src="{% static 'js/components/Header.js' %}"></script>
-
     <script src="{% static 'js/api/Api.js' %}"></script>
-
 
 {% endblock %}

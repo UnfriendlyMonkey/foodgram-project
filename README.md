@@ -23,14 +23,14 @@
 выполните команды ```docker-compose build``` для сборки проекта и ```docker-compose up``` для его запуска
 
 #### 2. Миграции
-для создания и завершения миграций выполните команды
+для создания и завершения миграций, а также предзаполнения вспомогательных БД выполните команды
 ```
-docker-compose exec web python manage.py makemigrations users
-docker-compose exec web python manage.py makemigrations recipes
-docker-compose exec web python manage.py makemigrations api
+
 docker-compose exec web python manage.py migrate
+docker-compose exec web python manage.py load_ingredients
+docker-compose exec web python manage.py fill_tags
 ```
-для миграции (проект работает на PostgreSQL)
+(проект работает на PostgreSQL)
 
 #### 3. Создание суперпользователя
 Суперпользователь с доступом к административной части проекта может быть создан командой
@@ -57,4 +57,3 @@ docker-compose exec web python manage.py collectstatic --no-input
         }
 ```
 Будут загружаться из переменных окружения.
-

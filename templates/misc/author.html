@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% load static %}
+{% block page_title %}Об авторе{% endblock %}
+{% block static_css %}
+  <link rel="stylesheet" href="{% static 'pages/index.css' %}">
+{% endblock %}
+
+{% block content %}
+  <div class="main__header">
+    <h1 class="main__title" style="text-align: center">Об авторе</h1>
+  </div>
+  <div class="custom-center-block">
+    <p class="custom-text-block">Дипломный проект курса Python developer на Яндекс.Практикум</p>
+    <p class="custom-text-block">Автор - Андрей Середа</p>
+    <div class="custom-button-block">
+      <a class="button button_style_blue" href="{% url 'index' %}">
+        Перейти на главную
+      </a>
+    </div>
+  </div>
+
+{% endblock %}
